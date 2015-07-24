@@ -1,0 +1,48 @@
+<ion-view view-title="Tank">
+    <ion-content>
+        <ion-list>
+            <ion-item title="Water Temperature">
+                <div class="item">
+                    <div class="row  responsive-sm">
+                        <div class="col-20">
+                            <h1>{{temperature}}</h1>
+                            <p>{{temperatureUpdate | moment: 'fromNow'}}</p>
+                            <img src="/img/water-temp.png" width="100px">
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="temperatureData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+            <ion-item title="pH">
+                <div class="item">
+                    <div class="row  responsive-sm">
+                        <div class="col-20">
+                            <h1 class="center">{{ph}}</h1>
+                            <p>{{phUpdate | moment: 'fromNow'}}</p>
+                            <img src="/img/test-tube.png" width="100px">
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="temperatureData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+            <ion-item title="Salinity">
+                <div class="item">
+                    <div class="row  responsive-sm">
+                        <div class="col-20">
+                            <h1>{{salinity}}</h1>
+                            <p>{{phUpdate | moment: 'fromNow'}}</p>
+                            <img src="/img/water.png" width="100px">
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="temperatureData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>
