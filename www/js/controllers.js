@@ -150,9 +150,24 @@ angular.module('starter.controllers', ['tc.chartjs'])
     }
 })
 
-.controller('PlaylistCtrl', function($scope, $stateParams) {
+.controller('ChartsCtrl', function($scope, $stateParams) {
 
 })
+
+.controller('LightsCtrl', function($scope, $stateParams, $timeout) {
+
+    $scope.getClass = function(){
+        return "evening";
+    }
+//    $scope.top = 40;
+//    $scope.moveSun = function(){
+//        $scope.showSun = !$scope.showSun;
+//        $timeout(function(){
+//            $scope.top = $scope.top > 0 ? $scope.top - 2 : 0;
+//        }, 500);
+//    };
+})
+
 .filter('moment', function () {
   return function (input, momentFn /*, param1, param2, ...param n */) {
     var args = Array.prototype.slice.call(arguments, 2),

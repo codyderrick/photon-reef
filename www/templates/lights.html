@@ -1,0 +1,17 @@
+<ion-view view-title="Lights">
+  <ion-content>
+    <div class="row">
+        <div class="col day-time-lights" style="position:relative; height: 300px; overflow: hidden" ng-click="moveSun()">
+            <div id="sky" ng-class="getClass()"></div>
+            <div id="sun_yellow" ng-class="getClass()"></div>
+<!--            <div id="sun_yellow" ng-show="showSun" ng-animate="{show: 'example-show', hide: 'example-hide'}" style="top:{{top}}%"></div>-->
+<!--            <div id="sun_yellow" ng-class='{"sun-height": showSun }' style='top:{{top}}%'></div>-->
+            <div id="sun_red" ng-class="getClass()"></div>
+            <div id="ground"></div>
+            <div id="night"></div>
+            <div id="stars"></div>
+            <div id="moon"></div>
+        </div>
+    </div>
+  </ion-content>
+</ion-view>
