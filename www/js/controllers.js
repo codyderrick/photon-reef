@@ -112,7 +112,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 
 .controller('ChartsCtrl', function($scope, $stateParams, $ionicModal, $log, dataService) {
     var now = new Date ();
-    //$scope.parameters = {};
+    $scope.dates = GetDates(now, 6);
     $scope.options = getChartOptions();
     
     $scope.calciumData = getEmptyChartData();
@@ -193,7 +193,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     
     function getEmptyChartData(){
         return {
-          labels: GetDates(now, 6),
+          labels: {},
           datasets: [
                 {
                   label: 'This Week',
@@ -210,14 +210,21 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     };
     
     function updateChart(data, chartData, parameter){
-        chartData.datasets[0].data = data
+        var nullsRemoved = data
             .filter(function(log){
                 if(!isNaN(log[parameter]))
                     return log;
-            })
+            });
+        chartData.datasets[0].data = nullsRemoved
             .map(function(log){
             if(!isNaN(log[parameter]))
                 return log[parameter];
+        });
+        
+        chartData.labels = nullsRemoved
+            .map(function(log){
+            if(!isNaN(log[parameter]))
+                return moment(log['date'] * 1000).format('MM/DD');
         });
     }
 })
