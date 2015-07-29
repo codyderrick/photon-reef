@@ -1,4 +1,8 @@
 /* Empty. Add your own CSS if you like */
+
+.text-center{
+    text-align: center;
+}
 #clouds, #sky, #night, #stars{
     position:absolute;
     top:0px;

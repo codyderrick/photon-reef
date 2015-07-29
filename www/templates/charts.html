@@ -1,5 +1,126 @@
+
 <ion-view view-title="Charts">
-  <ion-content>
-    <h1>Charts</h1>
-  </ion-content>
+    <ion-nav-buttons side="right">
+      <button class="button icon ion-clipboard" ng-click="openModal()"></button>
+   </ion-nav-buttons>
+    <ion-content>
+        <ion-list>
+            <ion-item title="Calcium">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-15">
+                            <h1 class="">Ca</h1>
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="calciumData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+            <ion-item title="Alkalinity">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-15">
+                            <h1>KH</h1>
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="khData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+            <ion-item title="Magnesium">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-15">
+                            <h1>Mg</h1>
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="magnesiumData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+            <ion-item title="Nitrate">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-15">
+                            <label class="assertive">
+                            <h1>NO<sub>3</sub></h1>
+                                </label>
+                        </div>
+                        <div class="col">
+                            <canvas tc-chartjs-line chart-data="magnesiumData" chart-options="options"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </ion-item>
+        </ion-list>
+    </ion-content>
 </ion-view>
+
+<script id="contact-modal.html" type="text/ng-template">
+  <div class="modal">
+    <ion-header-bar>
+      <h1 class="title">Add Parameters</h1>
+    </ion-header-bar>
+    <ion-content>
+        <div class="list">
+            <label class="item item-input">
+                <span class="input-label">Date</span>
+                <input type="text" 
+                              placeholder="Pick date" 
+                              value="{{date | moment: 'format':'MM/DD/YYYY'}}"
+                              ng-click="opendateModal()" >
+            </label>
+            <label class="item item-input">
+                <span class="input-label" ng-model="calcium">Calcium</span>
+                <input type="number">
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Alkalinity</span>
+                <input type="number">
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Magnesium</span>
+                <input type="number" ng-model="magnesium">
+            </label>
+            <label class="item item-input">
+                <span class="input-label">Nitrate</span>
+                <input type="number">
+            </label>
+        </div>
+        
+        {{dateModalData.date}}
+        <div class="button-bar">
+            <a class="button button-energized" ng-click="closeModal()">Cancel</a>
+            <a class="button button-balanced" ng-click="save()">Add</a>
+        </div>
+        <div class="assertive">{{errors}}</div>
+    </ion-content>
+  </div>
+</script>
+
+<script id="datemodal.html" type="text/ng-template">
+    <div class="modal">
+        <ion-header-bar class="royal">
+            <h1 class="title">{{date | moment: 'format':'dddd' }}</h1>
+        </ion-header-bar>
+        <ion-content>
+            <div class="row text-center">
+                <div class="col">
+                    <h3 class="positive">{{date | moment: 'format':'MMMM' }}</h3>
+                    <h1 class="positive">{{date | moment: 'format':'DD' }}</h1>
+                    <h4 class="dark">{{date | moment: 'format':'YYYY' }}</h4>
+                </div>
+            </div>
+            <div class="row text-center">
+                <div class="col">
+                    <date-picker ng-model="date"></date-picker>
+                    <input ng-model="date">
+                </div>
+            </div>
+            <button class="button button-full button-dark" ng-click="closedateModal()">Done</button>
+        </ion-content>
+    </div>
+</script>

@@ -1,4 +1,4 @@
-angular.module('starter.controllers', ['tc.chartjs'])
+angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 
 .controller('AppCtrl', function($scope, $ionicModal, $timeout) {
 
@@ -150,7 +150,66 @@ angular.module('starter.controllers', ['tc.chartjs'])
     }
 })
 
-.controller('ChartsCtrl', function($scope, $stateParams) {
+.controller('ChartsCtrl', function($scope, $stateParams, $ionicModal, $log, dataService) {
+    //$scope.date = new Date ();
+    //$scope.parameters = {};
+    
+
+    
+    $ionicModal.fromTemplateUrl('contact-modal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.modal = modal
+    })  
+
+    $scope.openModal = function() {
+        $scope.date = new Date ();
+        $scope.modal.show()
+    }
+
+    $scope.closeModal = function() {
+        $scope.modal.hide();
+    };
+
+    $scope.save = function(){
+        var parameters = {
+            'date': this.date,
+            'calcium': this.calcium,
+            'magnesium': this.magnesium
+        };
+        dataService.save(parameters)
+            .then(function (data) {
+                $log.info(data);
+                $scope.modal.hide();
+            }, function (error) {
+                $log.error(error);
+                $scope.errors = error;
+            });
+    }
+
+    
+    $ionicModal.fromTemplateUrl('datemodal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.dateModal = modal
+    });
+    
+    $scope.opendateModal = function() {
+      $scope.dateModal.show();
+    };
+    
+    $scope.closedateModal = function() {
+        $scope.date = this.date;
+        $scope.dateModal.hide();
+      //$scope.date = modal;
+    };
+    
+    $scope.$on('$destroy', function() {
+        $scope.modal.remove();
+        $scope.dateModal.remove();
+    });
 
 })
 
