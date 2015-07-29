@@ -1,5 +1,11 @@
 angular.module('starter.services', [])
 
+.factory('particleService', function($http, $q){
+
+    return {
+        
+    };
+})
 .factory('dataService', function($http, $q) {
     var keys = JSON.parse(window.localStorage['sparkKeys']);
     var inputUrl = 'https://data.sparkfun.com/input/' + keys.public;
