@@ -105,7 +105,157 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
       ]
     };
     
-    $scope.options =  {
+    $scope.options = getChartOptions();
+    
+
+})
+
+.controller('ChartsCtrl', function($scope, $stateParams, $ionicModal, $log, dataService) {
+    var now = new Date ();
+    //$scope.parameters = {};
+    $scope.options = getChartOptions();
+    
+    $scope.calciumData = getEmptyChartData();
+    $scope.khData = getEmptyChartData();
+    
+    function getHistoryData() {
+        dataService.getHistory(7)
+            .then(function(data){
+                updateChart(data, $scope.calciumData, 'calcium');
+                updateChart(data, $scope.khData, 'alkalinity');
+            }, function (error) {
+                $log.error(error);
+                $scope.errors = error;
+            });
+    };
+    
+    $ionicModal.fromTemplateUrl('contact-modal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.modal = modal
+    })  
+
+    $scope.openModal = function() {
+        $scope.date = new Date ();
+        $scope.modal.show()
+    }
+
+    $scope.closeModal = function() {
+        $scope.modal.hide();
+    };
+
+    $scope.save = function(){
+        var parameters = {
+            'date': this.date.getTime(),
+            'calcium': this.calcium,
+            'alkalinity': this.alkalinity,
+            'magnesium': this.magnesium,
+            'nitrate': this.nitrate,
+            'nitrite': this.nitrite,
+            'ammonia': this.ammonia
+        };
+        dataService.save(parameters)
+            .then(function (data) {
+                $log.info(data);
+                getHistoryData();
+                $scope.modal.hide();
+            }, function (error) {
+                $log.error(error);
+                $scope.errors = error;
+            });
+    }
+
+    
+    $ionicModal.fromTemplateUrl('datemodal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+    }).then(function(modal) {
+        $scope.dateModal = modal
+    });
+    
+    $scope.opendateModal = function() {
+      $scope.dateModal.show();
+    };
+    
+    $scope.closedateModal = function() {
+        $scope.date = this.date;
+        $scope.dateModal.hide();
+      //$scope.date = modal;
+    };
+    
+    $scope.$on('$destroy', function() {
+        $scope.modal.remove();
+        $scope.dateModal.remove();
+    });
+
+    getHistoryData();
+    
+    function getEmptyChartData(){
+        return {
+          labels: GetDates(now, 6),
+          datasets: [
+                {
+                  label: 'This Week',
+                  fillColor: 'rgba(220,220,220,0.2)',
+                  strokeColor: 'rgba(220,220,220,1)',
+                  pointColor: 'rgba(220,220,220,1)',
+                  pointStrokeColor: '#fff',
+                  pointHighlightFill: '#fff',
+                  pointHighlightStroke: 'rgba(220,220,220,1)',
+                  data: [0,0,0,0,0,0,0]
+                }
+              ]
+            };
+    };
+    
+    function updateChart(data, chartData, parameter){
+        chartData.datasets[0].data = data
+            .filter(function(log){
+                if(!isNaN(log[parameter]))
+                    return log;
+            })
+            .map(function(log){
+            if(!isNaN(log[parameter]))
+                return log[parameter];
+        });
+    }
+})
+
+.controller('LightsCtrl', function($scope, $stateParams, $timeout) {
+
+    $scope.getClass = function(){
+        return "evening";
+    }
+//    $scope.top = 40;
+//    $scope.moveSun = function(){
+//        $scope.showSun = !$scope.showSun;
+//        $timeout(function(){
+//            $scope.top = $scope.top > 0 ? $scope.top - 2 : 0;
+//        }, 500);
+//    };
+})
+
+.filter('moment', function () {
+  return function (input, momentFn /*, param1, param2, ...param n */) {
+    var args = Array.prototype.slice.call(arguments, 2),
+        momentObj = moment(input);
+    return momentObj[momentFn].apply(momentObj, args);
+  };
+});
+
+function GetDates(startDate, daysToGoBack) {
+    var aryDates = [];
+    for (var i = daysToGoBack; i >= 0; i--) {
+        var currentDate = new Date();
+        currentDate.setDate(startDate.getDate() - i);
+        aryDates.push(moment(currentDate).format('ddd'));
+    }
+    return aryDates;
+}
+    
+function getChartOptions(){
+    return {
       // Sets the chart to be responsive
       responsive: true,
       scaleShowLabels: false,
@@ -138,109 +288,4 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
       //String - A legend template
       legendTemplate : '<ul class="tc-chart-js-legend"><% for (var i=0; i<datasets.length; i++){%><li><span style="background-color:<%=datasets[i].strokeColor%>"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>'
     };
-    
-    function GetDates(startDate, daysToGoBack) {
-        var aryDates = [];
-        for (var i = daysToGoBack; i >= 0; i--) {
-            var currentDate = new Date();
-            currentDate.setDate(startDate.getDate() - i);
-            aryDates.push(moment(currentDate).format('ddd'));
-        }
-        return aryDates;
-    }
-})
-
-.controller('ChartsCtrl', function($scope, $stateParams, $ionicModal, $log, dataService) {
-    //$scope.date = new Date ();
-    //$scope.parameters = {};
-    dataService.getHistory(7)
-        .then(function(data){
-            $scope.chartData = data;
-        }, function (error) {
-            $log.error(error);
-            $scope.errors = error;
-        });
-
-    
-    $ionicModal.fromTemplateUrl('contact-modal.html', {
-        scope: $scope,
-        animation: 'slide-in-up'
-    }).then(function(modal) {
-        $scope.modal = modal
-    })  
-
-    $scope.openModal = function() {
-        $scope.date = new Date ();
-        $scope.modal.show()
-    }
-
-    $scope.closeModal = function() {
-        $scope.modal.hide();
-    };
-
-    $scope.save = function(){
-        var parameters = {
-            'date': this.date.getTime(),
-            'calcium': this.calcium,
-            'alkalinity': this.alkalinity,
-            'magnesium': this.magnesium,
-            'nitrate': this.nitrate,
-            'nitrite': this.nitrite,
-            'ammonia': this.ammonia
-        };
-        dataService.save(parameters)
-            .then(function (data) {
-                $log.info(data);
-                $scope.modal.hide();
-            }, function (error) {
-                $log.error(error);
-                $scope.errors = error;
-            });
-    }
-
-    
-    $ionicModal.fromTemplateUrl('datemodal.html', {
-        scope: $scope,
-        animation: 'slide-in-up'
-    }).then(function(modal) {
-        $scope.dateModal = modal
-    });
-    
-    $scope.opendateModal = function() {
-      $scope.dateModal.show();
-    };
-    
-    $scope.closedateModal = function() {
-        $scope.date = this.date;
-        $scope.dateModal.hide();
-      //$scope.date = modal;
-    };
-    
-    $scope.$on('$destroy', function() {
-        $scope.modal.remove();
-        $scope.dateModal.remove();
-    });
-
-})
-
-.controller('LightsCtrl', function($scope, $stateParams, $timeout) {
-
-    $scope.getClass = function(){
-        return "evening";
-    }
-//    $scope.top = 40;
-//    $scope.moveSun = function(){
-//        $scope.showSun = !$scope.showSun;
-//        $timeout(function(){
-//            $scope.top = $scope.top > 0 ? $scope.top - 2 : 0;
-//        }, 500);
-//    };
-})
-
-.filter('moment', function () {
-  return function (input, momentFn /*, param1, param2, ...param n */) {
-    var args = Array.prototype.slice.call(arguments, 2),
-        momentObj = moment(input);
-    return momentObj[momentFn].apply(momentObj, args);
-  };
-});
+}
