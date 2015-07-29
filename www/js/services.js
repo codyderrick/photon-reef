@@ -11,13 +11,16 @@ angular.module('starter.services', [])
         save: function(parameters){
             var deferred = $q.defer();
             //var xsrf = JSON.stringify(parameters);
-
-            $http.post(inputUrl, parameters, { 
-                    headers: { 'Phant-Private-Key': keys.private },
-                    transformRequest: transform
-                })
+            var values = transform(parameters);
+            var url = inputUrl + '?callback=JSON_CALLBACK&private_key=' + keys.private + '&' + values;
+            $http.jsonp(url)
                 .success(function(data) {
-                    deferred.resolve(data[0]);
+                    if(data.success){
+                        deferred.resolve(data)
+                    }
+                    else{
+                        deferred.reject('Request failed: ' + data.message);
+                    }
                 }).error(function(data, status, headers, config) {
                     deferred.reject('Request failed: ' + status);
                 });
@@ -27,7 +30,9 @@ angular.module('starter.services', [])
         },
         getHistory: function(days){
             var deferred = $q.defer();
-            $http.get(getUrl + '?gte[date]=2015/07/01')
+            var now = new Date();
+            var searchDate = now.setMinutes(now.getMinutes() - days * 60 * 24);
+            $http.get(getUrl + '?gte[date]=' + searchDate)
             .success(function (data) {   
                 deferred.resolve(data);
             }).error(function (data, status, headers, config) {
@@ -39,8 +44,10 @@ angular.module('starter.services', [])
     
     function transform(json) {
         var str = [];
-        for(var p in json)
-        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(json[p]));
+        for(var p in json){
+            var v = json[p] ? encodeURIComponent(json[p]) : null;
+            str.push(encodeURIComponent(p) + "=" + v);
+        }
         return str.join("&");
     }
 });

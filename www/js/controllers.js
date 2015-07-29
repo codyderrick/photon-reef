@@ -153,7 +153,13 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 .controller('ChartsCtrl', function($scope, $stateParams, $ionicModal, $log, dataService) {
     //$scope.date = new Date ();
     //$scope.parameters = {};
-    
+    dataService.getHistory(7)
+        .then(function(data){
+            $scope.chartData = data;
+        }, function (error) {
+            $log.error(error);
+            $scope.errors = error;
+        });
 
     
     $ionicModal.fromTemplateUrl('contact-modal.html', {
@@ -174,9 +180,13 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 
     $scope.save = function(){
         var parameters = {
-            'date': this.date,
+            'date': this.date.getTime(),
             'calcium': this.calcium,
-            'magnesium': this.magnesium
+            'alkalinity': this.alkalinity,
+            'magnesium': this.magnesium,
+            'nitrate': this.nitrate,
+            'nitrite': this.nitrite,
+            'ammonia': this.ammonia
         };
         dataService.save(parameters)
             .then(function (data) {

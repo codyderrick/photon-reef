@@ -12,7 +12,7 @@
                             <h1 class="">Ca</h1>
                         </div>
                         <div class="col">
-                            <canvas tc-chartjs-line chart-data="calciumData" chart-options="options"></canvas>
+                            <canvas tc-chartjs-line chart-data="chartData | filter:'calcium != null" chart-options="options"></canvas>
                         </div>
                     </div>
                 </div>
@@ -70,16 +70,16 @@
                 <span class="input-label">Date</span>
                 <input type="text" 
                               placeholder="Pick date" 
-                              value="{{date | moment: 'format':'MM/DD/YYYY'}}"
+                              value="{{date | moment: 'format':'MM/DD/YYYY mm:hh'}}"
                               ng-click="opendateModal()" >
             </label>
             <label class="item item-input">
-                <span class="input-label" ng-model="calcium">Calcium</span>
-                <input type="number">
+                <span class="input-label">Calcium</span>
+                <input type="number" ng-model="calcium">
             </label>
             <label class="item item-input">
                 <span class="input-label">Alkalinity</span>
-                <input type="number">
+                <input type="number" ng-model="alkalinity">
             </label>
             <label class="item item-input">
                 <span class="input-label">Magnesium</span>
@@ -87,7 +87,7 @@
             </label>
             <label class="item item-input">
                 <span class="input-label">Nitrate</span>
-                <input type="number">
+                <input type="number" ng-model="nitrate">
             </label>
         </div>
         
