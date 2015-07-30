@@ -1,8 +1,31 @@
 angular.module('starter.services', [])
 
 .factory('particleService', function($http, $q){
-
+    var keys = JSON.parse(window.localStorage['sparkKeys']);
+    var getUrl = 'https://api.particle.io/v1/devices/' + keys.deviceId;
     return {
+        getTemperature: function(){
+            var deferred = $q.defer();
+            var now = new Date();
+            $http.get(getUrl + '/temperature?access_token=' + keys.accessToken)
+            .success(function (data) {   
+                deferred.resolve(data);
+            }).error(function (data, status, headers, config) {
+                deferred.reject('Request failed: ' + status);
+            });
+            return deferred.promise;
+        },
+        getPh: function(){
+            var deferred = $q.defer();
+            var now = new Date();
+            $http.get(getUrl + '/ph?access_token=' + keys.accessToken)
+            .success(function (data) {   
+                deferred.resolve(data);
+            }).error(function (data, status, headers, config) {
+                deferred.reject('Request failed: ' + status);
+            });
+            return deferred.promise;
+        }
         
     };
 })
