@@ -25,6 +25,19 @@ angular.module('starter.services', [])
                 deferred.reject('Request failed: ' + status);
             });
             return deferred.promise;
+        },
+        
+        relay: function(command){
+            alert(command);
+//            var deferred = $q.defer();
+//            var now = new Date();
+//            $http.get(getUrl + '/relay?access_token=' + keys.accessToken)
+//            .success(function (data) {   
+//                deferred.resolve(data);
+//            }).error(function (data, status, headers, config) {
+//                deferred.reject('Request failed: ' + status);
+//            });
+//            return deferred.promise;
         }
         
     };
