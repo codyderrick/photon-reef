@@ -1,0 +1,20 @@
+<ion-view view-title="Control">
+  <ion-content>
+    <ion-list>
+        <ion-item ng-repeat="relay in relays">
+            <div class="row">
+                <div class="col col-center">
+                    {{relay.name}}
+                </div>
+                <div class="col">
+                    <div class="button-bar">
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'auto']" ng-click="setRelay('run', relay)">Auto</button>
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'on']" ng-click="setRelay('HIGH', relay)">On</button>
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'off']" ng-click="setRelay('LOW', relay)">Off</button>
+                    </div>
+                </div>
+            </div>
+        </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>

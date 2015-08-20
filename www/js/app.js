@@ -42,6 +42,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     }
   })
 
+  .state('app.control', {
+    url: '/control',
+    views: {
+      'control': {
+        templateUrl: 'templates/control.html',
+          controller: 'ControlCtrl'
+      }
+    }
+  })
+
+  
   .state('app.lights', {
       url: '/lights',
       views: {
