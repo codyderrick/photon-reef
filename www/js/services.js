@@ -1,17 +1,20 @@
 angular.module('starter.services', [])
 
 .factory('particleService', function($http, $q){
+	
+	window.localStorage['sparkKeys'] = JSON.stringify({"deviceId":"2a0030000c47343233323032","accessToken":"5a276eec75625419e0a34546e48e4ee6e6bcf12c","public":"DJ6R5b4DnoiDYxKg91Vp","private":"P4b1qErM6wceMyv9VBGg"});
     var keys = JSON.parse(window.localStorage['sparkKeys']);
     var getUrl = 'https://api.particle.io/v1/devices/' + keys.deviceId;
     return {
         getTemperature: function(){
             var deferred = $q.defer();
             var now = new Date();
-            $http.get(getUrl + '/temperature?access_token=' + keys.accessToken)
+			var url = getUrl + '/temperature?access_token=' + keys.accessToken;
+            $http.get(url)
             .success(function (data) {   
                 deferred.resolve(data);
             }).error(function (data, status, headers, config) {
-                deferred.reject('Request failed: ' + status);
+                deferred.reject('Request failed ('+ url + '): ' + status);
             });
             return deferred.promise;
         },
@@ -48,10 +51,10 @@ angular.module('starter.services', [])
                         deferred.resolve(data)
                     }
                     else{
-                        deferred.reject('Request failed: ' + data.message);
+                        deferred.reject('Request failed (' + url + '): ' + data.message);
                     }
                 }).error(function(data, status, headers, config) {
-                    deferred.reject('Request failed: ' + status);
+                    deferred.reject('Request failed (' + url + '): ' + status);
                 });
             return deferred.promise;
         },

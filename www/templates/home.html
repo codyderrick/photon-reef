@@ -4,12 +4,12 @@
             <ion-item title="Water Temperature">
                 <div class="item">
                     <div class="row">
-                        <div class="col-20">
-                            <h1>{{temperature}}</h1>
+                        <div class="col-40">
+                            <h1>{{temperature | number:1}}</h1>
                             <p>{{temperatureUpdate | moment: 'fromNow'}}</p>
-                            <img src="/img/water-temp.png" width="100px">
+                            <img src="img/water-temp.png" width="75px">
                         </div>
-                        <div class="col">
+                        <div class="col col-center">
                             <canvas tc-chartjs-line chart-data="temperatureData" chart-options="options"></canvas>
                         </div>
                     </div>
@@ -18,12 +18,12 @@
             <ion-item title="pH">
                 <div class="item">
                     <div class="row">
-                        <div class="col-20">
-                            <h1 class="center">{{ph}}</h1>
+                        <div class="col-40">
+                            <h1 class="center">{{ph | number:1}}</h1>
                             <p>{{phUpdate | moment: 'fromNow'}}</p>
-                            <img src="/img/test-tube.png" width="100px">
+                            <img src="img/test-tube.png" width="75px">
                         </div>
-                        <div class="col">
+                        <div class="col col-center">
                             <canvas tc-chartjs-line chart-data="phData" chart-options="options"></canvas>
                         </div>
                     </div>
@@ -32,12 +32,12 @@
             <ion-item title="Salinity">
                 <div class="item">
                     <div class="row">
-                        <div class="col-20">
-                            <h1>{{salinity}}</h1>
+                        <div class="col-40">
+                            <h1>{{salinity | number:3}}</h1>
                             <p>{{phUpdate | moment: 'fromNow'}}</p>
-                            <img src="/img/water.png" width="100px">
+                            <img src="img/water.png" width="75px">
                         </div>
-                        <div class="col">
+                        <div class="col col-center">
                             <canvas tc-chartjs-line chart-data="salinityData" chart-options="options"></canvas>
                         </div>
                     </div>
