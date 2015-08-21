@@ -55,6 +55,7 @@ angular.module('starter.services', [])
     return {
         save: function(parameters){
             var deferred = $q.defer();
+<<<<<<< HEAD
             connect.push('parameters', parameters)
             .then(function (response) {
                 if(response){
@@ -81,6 +82,39 @@ angular.module('starter.services', [])
             });
                 
 //                
+=======
+
+        //     //var xsrf = JSON.stringify(parameters);
+        //     var values = transform(parameters);
+        //     var url = inputUrl + '?callback=JSON_CALLBACK&private_key=' + keys.private + '&' + values;
+        //     $http.jsonp(url)
+        //         .success(function(data) {
+        //             if(data.success){
+        //                 deferred.resolve(data)
+        //             }
+        //             else{
+        //                 deferred.reject('Request failed (' + url + '): ' + data.message);
+        //             }
+        //         }).error(function(data, status, headers, config) {
+        //             deferred.reject('Request failed (' + url + '): ' + status);
+        //         });
+        //     return deferred.promise;
+        // },
+        // get: function(parameter){
+        // },
+        // getHistory: function(days){
+        //     var deferred = $q.defer();
+        //     var now = new Date();
+        //     var searchDate = now.setMinutes(now.getMinutes() - days * 60 * 24);
+        //     $http.get(getUrl + '?gte[date]=' + searchDate)
+        //     .success(function (data) {   
+        //         deferred.resolve(data);
+        //     }).error(function (data, status, headers, config) {
+        //         deferred.reject('Request failed: ' + status);
+        //     });
+        //     return deferred.promise;
+            connect.push('parameters', parameters);
+>>>>>>> origin/master
         }
     };
     
