@@ -53,7 +53,32 @@ angular.module('starter.services', [])
     return {
         save: function(parameters){
             var deferred = $q.defer();
-            connect.push('parameters', parameters);
+            connect.push('parameters', parameters)
+            .then(function (response) {
+                if(response){
+                }
+                return deferred.promise;
+            },
+            function(){ deferred.reject('Request failed: ' + status); });        
+        },
+        getHistory: function(days){
+            var deferred = $q.defer();
+            return connect.query('parameters')
+                .select({
+                    ca: {avg: 'calcium'},
+                    dKh: {avg: 'alkalinity'},
+                    mg: { avg: "magnesium" },
+                    no3: { avg: "nitrate" }
+                })
+                .interval('daily')
+                .timeframe('this_month')
+                .execute()
+            .then(function(results){
+                deferred.resolve(results.results);
+                return deferred.promise;
+            });
+                
+//                
         }
     };
     

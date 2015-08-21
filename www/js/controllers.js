@@ -128,12 +128,16 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     
     $scope.calciumData = getEmptyChartData();
     $scope.khData = getEmptyChartData();
+    $scope.mgData = getEmptyChartData();
+    $scope.no3Data = getEmptyChartData();
     
     function getHistoryData() {
         dataService.getHistory(7)
             .then(function(data){
-                updateChart(data, $scope.calciumData, 'calcium');
-                updateChart(data, $scope.khData, 'alkalinity');
+                updateChart(data, $scope.calciumData, 'ca');
+                updateChart(data, $scope.khData, 'dKh');
+                updateChart(data, $scope.mgData, 'mg');
+                updateChart(data, $scope.no3Data, 'no3');
             }, function (error) {
                 $log.error(error);
                 $scope.errors = error;
@@ -158,7 +162,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 
     $scope.save = function(){
         var parameters = {
-            'date': this.date.getTime(),
+            'timestamp': moment(this.date).toISOString(),
             'calcium': this.calcium,
             'alkalinity': this.alkalinity,
             'magnesium': this.magnesium,
@@ -190,7 +194,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     };
     
     $scope.closedateModal = function() {
-        $scope.date = this.date;
+        $scope.date = moment(this.date, "MM/DD/YYYY");
         $scope.dateModal.hide();
       //$scope.date = modal;
     };
@@ -223,19 +227,18 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     function updateChart(data, chartData, parameter){
         var nullsRemoved = data
             .filter(function(log){
-                if(!isNaN(log[parameter]))
+                if(log.results[0] && !isNaN(log.results[0][parameter]))
                     return log;
             });
+        
         chartData.datasets[0].data = nullsRemoved
             .map(function(log){
-            if(!isNaN(log[parameter]))
-                return log[parameter];
-        });
+                return log.results[0][parameter];
+            });
         
         chartData.labels = nullsRemoved
             .map(function(log){
-            if(!isNaN(log[parameter]))
-                return moment(log['date'] * 1000).format('MM/DD');
+                return moment(log.interval.end).format('MM/DD');
         });
     }
 })
