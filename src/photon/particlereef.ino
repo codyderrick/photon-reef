@@ -64,6 +64,8 @@ void setup() {
     //register the Spark function
     Spark.function("relay", relayControl);
     
+    Spark.subscribe("temperature_alert", handleTemperatureAlert);
+    
     // register spark variables
     Spark.variable("temperature", &temperature, STRING);
     // Spark.variable("ph", &ph_data, STRING);
@@ -169,6 +171,9 @@ void getTemperature()
 				sprintf(temperature, "%i", t_temp);
 				//Spark.publish("temp-celcius", str_c, 60, PRIVATE);
 				Spark.publish("tankTemperature", temperature, 60, PRIVATE);
+				if(t_temp>810){
+					Spark.publish("temperature_alert", "HIGH", 60, PRIVATE);
+				}
 			}
 			else
 			{
@@ -176,7 +181,7 @@ void getTemperature()
 			}
         }
     }
-    log("finished measurement");   
+    log("finished measurement");
 }
 
 // void getPh()
@@ -189,3 +194,9 @@ void getTemperature()
 //         ph = atof(ph_data);
 //     }
 // }
+
+void handleTemperatureAlert(const char *event, const char *data){
+	if (strcmp(data,"HIGH")==0) {
+    		relayControl("r3,OFF");
+	}
+}
