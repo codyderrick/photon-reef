@@ -8,9 +8,9 @@
                 </div>
                 <div class="col">
                     <div class="button-bar">
-                        <button class="button" ng-class="{true: 'active'}[relay.state == 'auto']" ng-click="setRelay('run', relay)">Auto</button>
-                        <button class="button" ng-class="{true: 'active'}[relay.state == 'on']" ng-click="setRelay('HIGH', relay)">On</button>
-                        <button class="button" ng-class="{true: 'active'}[relay.state == 'off']" ng-click="setRelay('LOW', relay)">Off</button>
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'auto']" ng-click="setRelay('AUTO', relay)" ng-show="relay.scheduled">Auto</button>
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'on']" ng-click="setRelay('ON', relay)">On</button>
+                        <button class="button" ng-class="{true: 'active'}[relay.state == 'off']" ng-click="setRelay('OFF', relay)">Off</button>
                     </div>
                 </div>
             </div>

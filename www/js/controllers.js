@@ -246,14 +246,14 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 .controller('ControlCtrl', function($scope, $stateParams, particleService) {
 
     $scope.relays = [
-        {id: 'r0', name: 'Kessil a350w', state: 'auto'},
-        {id: 'r1', name: 'Return Pump', state: 'on'},
-        {id: 'r2', name: 'Skimmer', state: 'off'},
-        {id: 'r3', name: 'Scrubber Lights', state: 'auto'}
+        {id: 'r1', name: 'Kessil a350w', state: 'auto', scheduled: true},
+        {id: 'r2', name: 'Scrubber Lights', state: 'auto', scheduled: true},
+        {id: 'r3', name: 'Heater/Skimmer', state: 'on'},
+        {id: 'r4', name: 'ATO', state: 'on'}
     ]
     
     $scope.setRelay = function(cmd, relay){
-        particleService.relay(relay.id + '-' + cmd);
+        particleService.relay(relay.id + ',' + cmd);
     };
 })
 
