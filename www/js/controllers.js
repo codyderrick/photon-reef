@@ -47,24 +47,13 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     d3 = new Date (d1);
     d2.setMinutes (d1.getMinutes() - 8);
     d3.setMinutes (d1.getMinutes() - 2);
-        
-    particleService.getTemperature()
-        .then(function(data){
-            $scope.temperature = data.result * .1;
-            $scope.temperatureUpdate = data.coreInfo.last_heard;
-        }, function (error) {
-            $log.error(error);
-            $scope.errors = error;
-        });
-
-    particleService.getPh()
-        .then(function(data){
-            $scope.ph = data.result * .1;
-            $scope.phUpdate = data.coreInfo.last_heard;
-        }, function (error) {
-            $log.error(error);
-            $scope.errors = error;
-        });
+    
+    getData();
+    
+    $scope.doRefresh = function() {
+        getData();
+        $scope.$broadcast('scroll.refreshComplete');
+    };
     
     $scope.salinity = 1.025;
     $scope.phUpdate = d3;
@@ -118,6 +107,26 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     };
     
     $scope.options = getChartOptions();
+    
+    function getData(){
+        particleService.getTemperature()
+        .then(function(data){
+            $scope.temperature = data.result * .1;
+            $scope.temperatureUpdate = data.coreInfo.last_heard;
+        }, function (error) {
+//            $log.error(error);
+            $scope.errors = error;
+        });
+
+        particleService.getPh()
+            .then(function(data){
+                $scope.ph = data.result * .1;
+                $scope.phUpdate = data.coreInfo.last_heard;
+            }, function (error) {
+//                $log.error(error);
+                $scope.errors = error;
+        });
+    }
 
 })
 
