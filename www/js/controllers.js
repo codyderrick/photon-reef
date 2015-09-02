@@ -41,7 +41,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
   };
 })
 
-.controller('HomeCtrl', function($scope, particleService) {
+.controller('HomeCtrl', function($scope, $log, particleService, dataService) {
     var d1 = new Date (),
     d2 = new Date (d1);
     d3 = new Date (d1);
@@ -49,30 +49,18 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     d3.setMinutes (d1.getMinutes() - 2);
     
     getData();
+    getHistoryData();
     
     $scope.doRefresh = function() {
         getData();
+        getHistoryData();
         $scope.$broadcast('scroll.refreshComplete');
     };
     
     $scope.salinity = 1.025;
     $scope.phUpdate = d3;
     
-    $scope.temperatureData = {
-      labels: GetDates(d1, 6),
-      datasets: [
-        {
-          label: 'This Week',
-          fillColor: 'rgba(220,220,220,0.2)',
-          strokeColor: 'rgba(220,220,220,1)',
-          pointColor: 'rgba(220,220,220,1)',
-          pointStrokeColor: '#fff',
-          pointHighlightFill: '#fff',
-          pointHighlightStroke: 'rgba(220,220,220,1)',
-          data: [80.1, 80.9, 81.2, 80.2, 81.1, 80.9, 79.8]
-        }
-      ]
-    };
+    $scope.temperatureData = getEmptyChartData();
     
     $scope.phData = {
       labels: GetDates(d1, 6),
@@ -114,7 +102,6 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
             $scope.temperature = data.result * .1;
             $scope.temperatureUpdate = data.coreInfo.last_heard;
         }, function (error) {
-//            $log.error(error);
             $scope.errors = error;
         });
 
@@ -123,10 +110,22 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
                 $scope.ph = data.result * .1;
                 $scope.phUpdate = data.coreInfo.last_heard;
             }, function (error) {
-//                $log.error(error);
+                $log.error(error);
                 $scope.errors = error;
         });
     }
+    
+    function getHistoryData() {
+        dataService.getHistory(7)
+            .then(function(data){
+                updateChart(data, $scope.temperatureData, 'temperature');
+//                updateChart(data, $scope.phData, 'ph');
+//                updateChart(data, $scope.salinityData, 'salinity');
+            }, function (error) {
+                $log.error(error);
+                $scope.errors = error;
+            });
+    };
 
 })
 
@@ -148,7 +147,6 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
                 updateChart(data, $scope.mgData, 'mg');
                 updateChart(data, $scope.no3Data, 'no3');
             }, function (error) {
-                $log.error(error);
                 $scope.errors = error;
             });
     };
@@ -215,41 +213,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
 
     getHistoryData();
     
-    function getEmptyChartData(){
-        return {
-          labels: {},
-          datasets: [
-                {
-                  label: 'This Week',
-                  fillColor: 'rgba(220,220,220,0.2)',
-                  strokeColor: 'rgba(220,220,220,1)',
-                  pointColor: 'rgba(220,220,220,1)',
-                  pointStrokeColor: '#fff',
-                  pointHighlightFill: '#fff',
-                  pointHighlightStroke: 'rgba(220,220,220,1)',
-                  data: [0,0,0,0,0,0,0]
-                }
-              ]
-            };
-    };
-    
-    function updateChart(data, chartData, parameter){
-        var nullsRemoved = data
-            .filter(function(log){
-                if(log.results[0] && !isNaN(log.results[0][parameter]))
-                    return log;
-            });
-        
-        chartData.datasets[0].data = nullsRemoved
-            .map(function(log){
-                return log.results[0][parameter];
-            });
-        
-        chartData.labels = nullsRemoved
-            .map(function(log){
-                return moment(log.interval.end).format('MM/DD');
-        });
-    }
+
 })
 
 .controller('ControlCtrl', function($scope, $stateParams, particleService) {
@@ -297,7 +261,43 @@ function GetDates(startDate, daysToGoBack) {
     }
     return aryDates;
 }
-    
+
+function getEmptyChartData(){
+    return {
+      labels: {},
+      datasets: [
+            {
+              label: 'This Week',
+              fillColor: 'rgba(220,220,220,0.2)',
+              strokeColor: 'rgba(220,220,220,1)',
+              pointColor: 'rgba(220,220,220,1)',
+              pointStrokeColor: '#fff',
+              pointHighlightFill: '#fff',
+              pointHighlightStroke: 'rgba(220,220,220,1)',
+              data: [0,0,0,0,0,0,0]
+            }
+          ]
+        };
+};
+
+function updateChart(data, chartData, parameter){
+    var nullsRemoved = data
+        .filter(function(log){
+            if(log.results[0] && !isNaN(log.results[0][parameter]))
+                return log;
+        });
+
+    chartData.datasets[0].data = nullsRemoved
+        .map(function(log){
+            return log.results[0][parameter];
+        });
+
+    chartData.labels = nullsRemoved
+        .map(function(log){
+            return moment(log.interval.end).format('MM/DD');
+    });
+}
+
 function getChartOptions(){
     return {
       // Sets the chart to be responsive

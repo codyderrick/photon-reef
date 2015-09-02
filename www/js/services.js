@@ -30,7 +30,6 @@ angular.module('starter.services', [])
         },
         
         relay: function(command){
-//            alert(command);
             var deferred = $q.defer();
             $http.post(getUrl + '/relay', 
                        { 
@@ -76,14 +75,30 @@ angular.module('starter.services', [])
                     no3: { avg: "nitrate" }
                 })
                 .interval('daily')
-                .timeframe('this_month')
+                .timeframe({ "current": { "days": days } })
                 .execute()
             .then(function(results){
                 deferred.resolve(results.results);
                 return deferred.promise;
+            },
+            function(status){ deferred.reject('Request failed: ' + status); });
+        },
+        getProbeHistory: function(days){
+            var deferred = $q.defer();
+            return connect.query('probes')
+                .select({
+                    temp: {avg: 'temperature'}
+                })
+                .interval('daily')
+                .timeframe({ "current": { "days": days } })
+                .execute()
+            .then(function(results){
+                deferred.resolve(results.results);
+                return deferred.promise;
+            },
+            function(status){ 
+                deferred.reject('Request failed: ' + status); 
             });
-                
-//                
         }
     };
     

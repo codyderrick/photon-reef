@@ -9,13 +9,16 @@
 
 #include "TimeAlarms/TimeAlarms.h"
 
+// add SparkJson library
+
 uint8_t sensors[80];
 char temperature[10];
+char relays[265];
 
 void log(char* msg)
 {
     Spark.publish("log", msg);
-    //delay(500);
+    delay(100);
 }
 
 int RELAY1 = D1;
@@ -37,7 +40,7 @@ schedule schedules[2] {
     },
     {
        RELAY2,
-       { 23,0 },
+       { 0,0 },
        { 12,0 }
     } };
 
@@ -63,35 +66,76 @@ void setup() {
     
     //register the Spark function
     Spark.function("relay", relayControl);
-    Spark.function("relayStates", getRelayStates);
+    Spark.function("relays", relayControl);
         
     Spark.subscribe("temperature_alert", handleTemperatureAlert);
     
     // register spark variables
     Spark.variable("temperature", &temperature, STRING);
     // Spark.variable("ph", &ph_data, STRING);
+    Spark.variable("relays", &relays, STRING);
 
+    // Lets listen for the hook response
+    Spark.subscribe("hook-response/timezone", gotTimeZone, MY_DEVICES);
+    delay(1000);
     
-    Time.zone(-6);
+    // publish the event that will trigger our Webhook
+    Spark.publish("timezone");
     
-    // main lights
-    Alarm.alarmRepeat(schedules[0].on[0],schedules[0].on[1],0, turnOnMainLights);
-    Alarm.alarmRepeat(schedules[0].off[0],schedules[0].off[1],0, turnOffMainLights);
+    Alarm.timerRepeat(300, getTemperature);
+    Alarm.alarmRepeat(0,0,0, saveProbes);
     
-    // sump(scrubber)
-    Alarm.alarmRepeat(23,0,0, turnOnSumpLights);
-    Alarm.alarmRepeat(12,0,0, turnOffSumpLights);
-    
-    Alarm.timerRepeat(300, getTemperature); 
-    
+    updateRelayJson();
 }
 
 void loop() {
     Alarm.delay(1000);
 }
 
-char* getRelayStates(String command){
+void gotTimeZone(const char *name, const char *data) {
     
+    StaticJsonBuffer<256> jsonBuffer;
+    JsonObject &root = jsonBuffer.parseObject(data);
+    
+    if (!root.success()) {
+        log("could not update timezone, using UTC");
+        
+        int tzOffset = root["dstOffset"] + root["rawOffset"] / 3600;
+        Time.zone(tzOffset);
+    }
+    
+    // don't start alarms until after getting tz offset
+    // main lights
+    Alarm.alarmRepeat(schedules[0].on[0],schedules[0].on[1],0, turnOnMainLights);
+    Alarm.alarmRepeat(schedules[0].off[0],schedules[0].off[1],0, turnOffMainLights);
+    
+    // sump(scrubber)
+    Alarm.alarmRepeat(schedules[1].on[0],schedules[1].on[1],0, turnOnSumpLights);
+    Alarm.alarmRepeat(schedules[1].off[0],schedules[1].off[1],0, turnOffSumpLights);
+}
+
+void turnOnMainLights(){
+    log("turning on main lights");
+    relayControl("r1,ON");
+    updateRelayJson();
+}
+
+void turnOffMainLights(){
+    log("turning off main lights");
+    relayControl("r1,OFF");
+    updateRelayJson();
+}
+
+void turnOnSumpLights(){
+    log("turning on sump lights");
+    relayControl("r2,ON");
+    updateRelayJson();
+}
+
+void turnOffSumpLights(){
+    log("turning off sump lights");
+    relayControl("r2,OFF");
+    updateRelayJson();
 }
 
 // command format r1,ON; r2,OFF; r1,AUTO
@@ -101,8 +145,7 @@ int relayControl(String command) {
     int relayNumber = command.charAt(1) - '0';
     // do a sanity check
     if (relayNumber < 1 || relayNumber > 4) return -1;
-    
-    
+        
     // find out the intended state of the relay
     if (command.substring(3,6) == "OFF") relayState = 1;
     else if (command.substring(3,5) == "ON") relayState = 0;
@@ -123,6 +166,8 @@ int relayControl(String command) {
     log(msg);
     
     digitalWrite(relayNumber, relayState);
+    
+    updateRelayJson();
     return 1;
 }
 
@@ -143,8 +188,6 @@ void getTemperature()
     delay(1000); //If your code has other tasks, you can store the timestamp instead and return when a second has passed.
 
     uint8_t numsensors = ow_search_sensors(10, sensors);
-    // sprintf(msg, "Found %i sensors", numsensors);
-    // log(msg);
 
     for (uint8_t i=0; i<numsensors; i++)
     {
@@ -154,31 +197,19 @@ void getTemperature()
 			if ( DS18X20_read_meas( &sensors[i*OW_ROMCODE_SIZE], &subzero, &cel, &cel_frac_bits) == DS18X20_OK ) {
 				char sign = (subzero) ? '-' : '+';
 				int frac = cel_frac_bits*DS18X20_FRACCONV;
-				// sprintf(msg, "Sensor# %d (%02X%02X%02X%02X%02X%02X%02X%02X) =  : %c%d.%04d\r\n",i+1,
-				// sensors[(i*OW_ROMCODE_SIZE)+0],
-				// sensors[(i*OW_ROMCODE_SIZE)+1],
-				// sensors[(i*OW_ROMCODE_SIZE)+2],
-				// sensors[(i*OW_ROMCODE_SIZE)+3],
-				// sensors[(i*OW_ROMCODE_SIZE)+4],
-				// sensors[(i*OW_ROMCODE_SIZE)+5],
-				// sensors[(i*OW_ROMCODE_SIZE)+6],
-				// sensors[(i*OW_ROMCODE_SIZE)+7],
-				// sign,
-				// cel,
-				// frac
-				// );
-				// log(msg);
-				
-				char str_c[10];
-				sprintf(str_c, "%c%d.%04d", sign, cel, frac);
-	
-				float c_temp = (frac * .0001f) + cel;//* 10000;
-				int t_temp = (c_temp * 1.8 + 32)*10;
+				char str_f[10];
+				float c_temp = (frac * .0001f) + cel;
+                float f_temp = (c_temp * 1.8 + 32);
+				int t_temp = f_temp*10;
 				sprintf(temperature, "%i", t_temp);
-				//Spark.publish("temp-celcius", str_c, 60, PRIVATE);
+                sprintf(str_f, "%.2f", f_temp);
+				Spark.publish("temp-float", str_f, 60, PRIVATE);
 				Spark.publish("tankTemperature", temperature, 60, PRIVATE);
-				if(t_temp>810){
+				if(f_temp>83){
 					Spark.publish("temperature_alert", "HIGH", 60, PRIVATE);
+				}
+                if(f_temp<75){
+					Spark.publish("temperature_alert", "LOW", 60, PRIVATE);
 				}
 			}
 			else
@@ -203,6 +234,37 @@ void getTemperature()
 
 void handleTemperatureAlert(const char *event, const char *data){
 	if (strcmp(data,"HIGH")==0) {
-    		relayControl("r3,OFF");
+        relayControl("r3,OFF");
 	}
+}
+
+void updateRelayJson(){
+    StaticJsonBuffer<256> jsonBuffer;
+
+    // {id: 'r1', name: 'Kessil a350w', state: 'auto', scheduled: true}
+    JsonObject &root = jsonBuffer.createArray();
+    JsonObject &relay = jsonBuffer.createObject();
+    relay["id"] = RELAY1;
+    relay["scheduled"] = true;
+    relay["state"] = digitalRead(RELAY1);
+    root.add(relay);
+    
+    relay["id"] = RELAY2;
+    relay["scheduled"] = true;
+    relay["state"] = digitalRead(RELAY2);
+    root.add(relay);
+    
+    relay["id"] = RELAY3;
+    relay["state"] = digitalRead(RELAY3);
+    root.add(relay);
+    
+    relay["id"] = RELAY4;
+    relay["state"] = digitalRead(RELAY4);
+    root.add(relay);
+    
+    root.prettyPrintTo(relays, sizeof(relays));
+}
+
+void saveProbes(){
+    Spark.publish("save-probes", "{ \"collection\": \"probes\", \"temperature\": 78.2 }", 60, PRIVATE);
 }
