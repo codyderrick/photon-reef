@@ -7,7 +7,7 @@
 // This #include statement was automatically added by the Particle IDE.
 #include "OneWire.h"
 
-// int hour;
+#include "TimeAlarms/TimeAlarms.h"
 
 uint8_t sensors[80];
 char temperature[10];
@@ -63,12 +63,14 @@ void setup() {
     
     //register the Spark function
     Spark.function("relay", relayControl);
-    
+    Spark.function("relayStates", getRelayStates);
+        
     Spark.subscribe("temperature_alert", handleTemperatureAlert);
     
     // register spark variables
     Spark.variable("temperature", &temperature, STRING);
     // Spark.variable("ph", &ph_data, STRING);
+
     
     Time.zone(-6);
     
@@ -85,7 +87,11 @@ void setup() {
 }
 
 void loop() {
+    Alarm.delay(1000);
+}
 
+char* getRelayStates(String command){
+    
 }
 
 // command format r1,ON; r2,OFF; r1,AUTO
@@ -104,8 +110,8 @@ int relayControl(String command) {
         for(int i = 0; i < sizeof(schedules); i++){
             relayState = 1;
             if(relayNumber == schedules[i].relay){
-                if((Time.hour() > schedules.on[0] && Time.minute() > schedules.on[1]) 
-                    && (Time.hour() < schedules.off[0] && Time.minute() < schedules.off[1])) relayState = 0;
+                if((Time.hour() > schedules[i].on[0] && Time.minute() > schedules[i].on[1]) 
+                    && (Time.hour() < schedules[i].off[0] && Time.minute() < schedules[i].off[1])) relayState = 0;
             }
         }
     }
