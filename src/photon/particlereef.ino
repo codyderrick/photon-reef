@@ -1,4 +1,7 @@
 // This #include statement was automatically added by the Particle IDE.
+#include "SparkJson/SparkJson.h"
+
+// This #include statement was automatically added by the Particle IDE.
 #include "crc8.h"
 
 // This #include statement was automatically added by the Particle IDE.
@@ -9,15 +12,13 @@
 
 #include "TimeAlarms/TimeAlarms.h"
 
-// add SparkJson library
-
 uint8_t sensors[80];
 char temperature[10];
 char relays[265];
 
 void log(char* msg)
 {
-    Spark.publish("log", msg);
+    Particle.publish("log", msg);
     delay(100);
 }
 
@@ -40,7 +41,7 @@ schedule schedules[2] {
     },
     {
        RELAY2,
-       { 0,0 },
+       { 23,10 },
        { 12,0 }
     } };
 
@@ -65,27 +66,26 @@ void setup() {
     digitalWrite(RELAY4, LOW);
     
     //register the Spark function
-    Spark.function("relay", relayControl);
-    Spark.function("relays", relayControl);
+    Particle.function("relay", relayControl);
+    Particle.function("relays", relayControl);
         
-    Spark.subscribe("temperature_alert", handleTemperatureAlert);
+    Particle.subscribe("temperature_alert", handleTemperatureAlert);
     
     // register spark variables
-    Spark.variable("temperature", &temperature, STRING);
+    Particle.variable("temperature", &temperature, STRING);
     // Spark.variable("ph", &ph_data, STRING);
-    Spark.variable("relays", &relays, STRING);
+    Particle.variable("relays", &relays, STRING);
 
     // Lets listen for the hook response
-    Spark.subscribe("hook-response/timezone", gotTimeZone, MY_DEVICES);
+    Particle.subscribe("hook-response/timezone", gotTimeZone, MY_DEVICES);
     delay(1000);
     
     // publish the event that will trigger our Webhook
-    Spark.publish("timezone");
-    
-    Alarm.timerRepeat(300, getTemperature);
-    Alarm.alarmRepeat(0,0,0, saveProbes);
+    Particle.publish("timezone");
     
     updateRelayJson();
+    
+    getTemperature();
 }
 
 void loop() {
@@ -94,13 +94,29 @@ void loop() {
 
 void gotTimeZone(const char *name, const char *data) {
     
+    log("parsing timezone");
+    
+    String str = String(data);
+    str.replace("\r", "");
+    
+    unsigned int length = str.length();
+    char json[length];
+    str.toCharArray(json, length);
+    
     StaticJsonBuffer<256> jsonBuffer;
-    JsonObject &root = jsonBuffer.parseObject(data);
+    JsonObject &root = jsonBuffer.parseObject(json);
     
     if (!root.success()) {
-        log("could not update timezone, using UTC");
-        
-        int tzOffset = root["dstOffset"] + root["rawOffset"] / 3600;
+        log("could not update timezone, using hard coded");
+        Time.zone(-6);
+    }
+    else{
+        int dstOffset = root["dstOffset"];
+        int rawOffset = root["rawOffset"];
+        int tzOffset = (dstOffset + rawOffset) / 3600;
+        char msg[100];
+        sprintf(msg, "updated timezone using offset %i", tzOffset);
+        log(msg);
         Time.zone(tzOffset);
     }
     
@@ -112,6 +128,10 @@ void gotTimeZone(const char *name, const char *data) {
     // sump(scrubber)
     Alarm.alarmRepeat(schedules[1].on[0],schedules[1].on[1],0, turnOnSumpLights);
     Alarm.alarmRepeat(schedules[1].off[0],schedules[1].off[1],0, turnOffSumpLights);
+    
+    Alarm.alarmRepeat(23,00,0, saveProbes);
+    
+    Alarm.timerRepeat(300, getTemperature);
 }
 
 void turnOnMainLights(){
@@ -242,7 +262,7 @@ void updateRelayJson(){
     StaticJsonBuffer<256> jsonBuffer;
 
     // {id: 'r1', name: 'Kessil a350w', state: 'auto', scheduled: true}
-    JsonObject &root = jsonBuffer.createArray();
+    JsonArray &root = jsonBuffer.createArray();
     JsonObject &relay = jsonBuffer.createObject();
     relay["id"] = RELAY1;
     relay["scheduled"] = true;
@@ -266,5 +286,8 @@ void updateRelayJson(){
 }
 
 void saveProbes(){
-    Spark.publish("save-probes", "{ \"collection\": \"probes\", \"temperature\": 78.2 }", 60, PRIVATE);
+    log("saving probes");
+    char msg[100];
+    sprintf(msg, "{ \"collection\": \"probes\", \"temperature\": \"%s\" }", temperature);
+    Spark.publish("save-probes", msg, 60, PRIVATE);
 }

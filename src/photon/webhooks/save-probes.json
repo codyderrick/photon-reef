@@ -1,0 +1,14 @@
+{
+    "event": "save-probes",
+    "url": "https://api.getconnect.io/events/{{collection}}",
+    "requestType": "POST",
+	"headers": {
+		"X-Project-Id": "",
+		"X-API-Key": "",
+		"Content-Type": "application/json"
+	},
+    "json": {
+		"temperature": "{{temperature}}"
+    },
+    "mydevices": true
+}

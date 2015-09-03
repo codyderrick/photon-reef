@@ -118,9 +118,11 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     function getHistoryData() {
         dataService.getHistory(7)
             .then(function(data){
-                updateChart(data, $scope.temperatureData, 'temperature');
+                $scope.temperatureData = updateChart(data, 'temperature');
 //                updateChart(data, $scope.phData, 'ph');
 //                updateChart(data, $scope.salinityData, 'salinity');
+            
+                $scope.$apply();
             }, function (error) {
                 $log.error(error);
                 $scope.errors = error;
@@ -133,24 +135,17 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     var now = new Date ();
     $scope.dates = GetDates(now, 6);
     $scope.options = getChartOptions();
+
     
-    $scope.calciumData = getEmptyChartData();
-    $scope.khData = getEmptyChartData();
-    $scope.mgData = getEmptyChartData();
-    $scope.no3Data = getEmptyChartData();
-    
-    function getHistoryData() {
-        dataService.getHistory(7)
-            .then(function(data){
-                updateChart(data, $scope.calciumData, 'ca');
-                updateChart(data, $scope.khData, 'dKh');
-                updateChart(data, $scope.mgData, 'mg');
-                updateChart(data, $scope.no3Data, 'no3');
-            }, function (error) {
-                $scope.errors = error;
-            });
+	getHistoryData();
+	
+    $scope.doRefresh = function() {
+        getHistoryData();
+        $scope.$broadcast('scroll.refreshComplete');
     };
     
+
+	
     $ionicModal.fromTemplateUrl('contact-modal.html', {
         scope: $scope,
         animation: 'slide-in-up'
@@ -187,7 +182,6 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
                 $scope.errors = error;
             });
     }
-
     
     $ionicModal.fromTemplateUrl('datemodal.html', {
         scope: $scope,
@@ -210,10 +204,20 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
         $scope.modal.remove();
         $scope.dateModal.remove();
     });
-
-    getHistoryData();
     
-
+    function getHistoryData() {
+        dataService.getHistory(7)
+            .then(function(data){
+                $scope.calciumData = updateChart(data, 'ca');
+                $scope.khData = updateChart(data, 'dKh');
+                $scope.mgData = updateChart(data, 'mg');
+                $scope.no3Data = updateChart(data, 'no3');
+            
+                $scope.$apply();
+            }, function (error) {
+                $scope.errors = error;
+            });
+    };
 })
 
 .controller('ControlCtrl', function($scope, $stateParams, particleService) {
@@ -264,7 +268,7 @@ function GetDates(startDate, daysToGoBack) {
 
 function getEmptyChartData(){
     return {
-      labels: {},
+      labels: ['9/3'],
       datasets: [
             {
               label: 'This Week',
@@ -274,13 +278,14 @@ function getEmptyChartData(){
               pointStrokeColor: '#fff',
               pointHighlightFill: '#fff',
               pointHighlightStroke: 'rgba(220,220,220,1)',
-              data: [0,0,0,0,0,0,0]
+              data: [0]
             }
           ]
         };
 };
 
-function updateChart(data, chartData, parameter){
+function updateChart(data, parameter){
+    var chartData = getEmptyChartData();
     var nullsRemoved = data
         .filter(function(log){
             if(log.results[0] && !isNaN(log.results[0][parameter]))
@@ -296,6 +301,8 @@ function updateChart(data, chartData, parameter){
         .map(function(log){
             return moment(log.interval.end).format('MM/DD');
     });
+    
+    return chartData;
 }
 
 function getChartOptions(){
