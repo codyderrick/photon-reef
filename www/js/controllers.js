@@ -60,7 +60,7 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     $scope.salinity = 1.025;
     $scope.phUpdate = d3;
     
-    $scope.temperatureData = getEmptyChartData();
+//    $scope.temperatureData = getEmptyChartData();
     
     $scope.phData = {
       labels: GetDates(d1, 6),
@@ -116,9 +116,9 @@ angular.module('starter.controllers', ['tc.chartjs', 'mp.datePicker'])
     }
     
     function getHistoryData() {
-        dataService.getHistory(7)
+        dataService.getProbeHistory(7)
             .then(function(data){
-                $scope.temperatureData = updateChart(data, 'temperature');
+                $scope.temperatureData = updateChart(data, 'temp');
 //                updateChart(data, $scope.phData, 'ph');
 //                updateChart(data, $scope.salinityData, 'salinity');
             

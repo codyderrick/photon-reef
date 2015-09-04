@@ -41,7 +41,7 @@ schedule schedules[2] {
     },
     {
        RELAY2,
-       { 23,10 },
+       { 23,15 },
        { 12,0 }
     } };
 
@@ -82,14 +82,16 @@ void setup() {
     
     // publish the event that will trigger our Webhook
     Particle.publish("timezone");
+    delay(10000);
     
     updateRelayJson();
     
-    getTemperature();
 }
 
 void loop() {
+    getTemperature();
     Alarm.delay(1000);
+    delay(60000);
 }
 
 void gotTimeZone(const char *name, const char *data) {
@@ -129,9 +131,7 @@ void gotTimeZone(const char *name, const char *data) {
     Alarm.alarmRepeat(schedules[1].on[0],schedules[1].on[1],0, turnOnSumpLights);
     Alarm.alarmRepeat(schedules[1].off[0],schedules[1].off[1],0, turnOffSumpLights);
     
-    Alarm.alarmRepeat(23,00,0, saveProbes);
-    
-    Alarm.timerRepeat(300, getTemperature);
+    Alarm.timerRepeat(1,0,0, saveProbes);
 }
 
 void turnOnMainLights(){
@@ -217,13 +217,13 @@ void getTemperature()
 			if ( DS18X20_read_meas( &sensors[i*OW_ROMCODE_SIZE], &subzero, &cel, &cel_frac_bits) == DS18X20_OK ) {
 				char sign = (subzero) ? '-' : '+';
 				int frac = cel_frac_bits*DS18X20_FRACCONV;
-				char str_f[10];
+				//char str_f[10];
 				float c_temp = (frac * .0001f) + cel;
                 float f_temp = (c_temp * 1.8 + 32);
 				int t_temp = f_temp*10;
 				sprintf(temperature, "%i", t_temp);
-                sprintf(str_f, "%.2f", f_temp);
-				Spark.publish("temp-float", str_f, 60, PRIVATE);
+                //sprintf(str_f, "%.2f", f_temp);
+				Spark.publish("temp-float", String(f_temp), 60, PRIVATE);
 				Spark.publish("tankTemperature", temperature, 60, PRIVATE);
 				if(f_temp>83){
 					Spark.publish("temperature_alert", "HIGH", 60, PRIVATE);
@@ -239,6 +239,7 @@ void getTemperature()
         }
     }
     log("finished measurement");
+    //Alarm.timerOnce(1200, getTemperature);
 }
 
 // void getPh()
